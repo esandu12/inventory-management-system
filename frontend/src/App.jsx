@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
 import Login from "./components/Login";
+import Register from "./components/Register";
+
 import ProductForm from "./components/ProductForm";
 import ProductTable from "./components/ProductTable";
 
@@ -12,6 +14,8 @@ import {
 function App() {
 
     const [user, setUser] = useState(null);
+
+    const [authPage, setAuthPage] = useState("register");
 
     const [products, setProducts] = useState([]);
 
@@ -27,8 +31,15 @@ function App() {
         const savedUser =
             localStorage.getItem("user");
 
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
+        const token =
+            localStorage.getItem("token");
+
+        if (savedUser && token) {
+
+            setUser(
+                JSON.parse(savedUser)
+            );
+
         }
 
     }, []);
@@ -42,7 +53,8 @@ function App() {
 
         try {
 
-            const data = await getProducts();
+            const data =
+                await getProducts();
 
             setProducts(data);
 
@@ -64,17 +76,19 @@ function App() {
     useEffect(() => {
 
         if (user) {
+
             loadProducts();
+
         }
 
     }, [user]);
 
 
     // ===============================
-    // Login
+    // Successful registration/login
     // ===============================
 
-    const handleLogin = (loggedInUser) => {
+    const handleAuthentication = (loggedInUser) => {
 
         setUser(loggedInUser);
 
@@ -93,6 +107,8 @@ function App() {
 
         setUser(null);
 
+        setAuthPage("login");
+
     };
 
 
@@ -108,7 +124,9 @@ function App() {
             );
 
         if (!confirmed) {
+
             return;
+
         }
 
         try {
@@ -134,14 +152,34 @@ function App() {
 
 
     // ===============================
-    // Show Login
+    // Authentication pages
     // ===============================
 
     if (!user) {
 
+        if (authPage === "register") {
+
+            return (
+                <Register
+                    onRegistered={
+                        handleAuthentication
+                    }
+                    onGoToLogin={() =>
+                        setAuthPage("login")
+                    }
+                />
+            );
+
+        }
+
         return (
             <Login
-                onLogin={handleLogin}
+                onLogin={
+                    handleAuthentication
+                }
+                onGoToRegister={() =>
+                    setAuthPage("register")
+                }
             />
         );
 
@@ -183,9 +221,10 @@ function App() {
             <main className="container">
 
                 <ProductForm
-                    onProductAdded={loadProducts}
+                    onProductAdded={
+                        loadProducts
+                    }
                 />
-
 
                 <section className="products-section">
 
@@ -199,7 +238,9 @@ function App() {
 
                         <ProductTable
                             products={products}
-                            onDelete={handleDelete}
+                            onDelete={
+                                handleDelete
+                            }
                         />
 
                     )}
@@ -209,8 +250,9 @@ function App() {
             </main>
 
         </div>
-
     );
+
 }
 
 export default App;
+

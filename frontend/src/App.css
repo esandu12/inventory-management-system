@@ -14,7 +14,7 @@ body {
 }
 
 .header {
-    background-color: #1f2937;
+    background-color: #030303;
     color: white;
     padding: 30px;
     text-align: center;
@@ -183,4 +183,26 @@ th {
 
 .logout-button:hover {
     background-color: #b91c1c;
+}
+
+.switch-auth {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    color: #666;
+}
+
+.secondary-button {
+    width: 100%;
+    padding: 12px;
+    background-color: white;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.secondary-button:hover {
+    background-color: #eff6ff;
 }
