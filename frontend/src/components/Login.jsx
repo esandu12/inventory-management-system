@@ -20,7 +20,7 @@ function Login({ onLogin, onGoToRegister }) {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/api/auth/login",
+                "http://localhost:5050/api/auth/login",
                 {
                     email,
                     password
