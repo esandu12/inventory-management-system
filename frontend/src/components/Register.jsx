@@ -16,7 +16,7 @@ function Register({ onRegistered, onGoToLogin }) {
         try {
             // Create account
             await axios.post(
-                "http://localhost:5000/api/auth/register",
+                "http://localhost:5050/api/auth/register",
                 {
                     name,
                     email,
@@ -29,7 +29,7 @@ function Register({ onRegistered, onGoToLogin }) {
 
             // Automatically log in after registration
             const loginResponse = await axios.post(
-                "http://localhost:5000/api/auth/login",
+                "http://localhost:5050/api/auth/login",
                 {
                     email,
                     password
