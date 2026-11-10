@@ -1,31 +1,16 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const db = require("./config/db");
 
 const router = express.Router();
 
-// ===============================
 // REGISTER
-// ===============================
 router.post("/register", async (req, res) => {
     try {
-        console.log("Registration body:", req.body);
+        console.log("Registration request received");
 
-        // Check whether request body exists
-        if (!req.body) {
-            return res.status(400).json({
-                message: "Request body is missing"
-            });
-        }
-
-        const {
-            name,
-            email,
-            password,
-            role
-        } = req.body;
+        const { name, email, password, role } = req.body || {};
 
         if (!name || !email || !password) {
             return res.status(400).json({
@@ -33,7 +18,6 @@ router.post("/register", async (req, res) => {
             });
         }
 
-        // Check whether email already exists
         const [existingUsers] = await db.query(
             "SELECT id FROM users WHERE email = ?",
             [email]
@@ -45,61 +29,39 @@ router.post("/register", async (req, res) => {
             });
         }
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(
-            password,
-            10
-        );
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
         const [result] = await db.query(
-            `INSERT INTO users
-            (name, email, password, role)
-            VALUES (?, ?, ?, ?)`,
-            [
-                name,
-                email,
-                hashedPassword,
-                role || "staff"
-            ]
+            `INSERT INTO users (name, email, password, role)
+             VALUES (?, ?, ?, ?)`,
+            [name, email, hashedPassword, role || "staff"]
         );
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "User registered successfully",
             userId: result.insertId
         });
 
     } catch (error) {
-        console.error(
-            "Registration error:",
-            error
-        );
+        console.error("Registration error:", error);
 
-        res.status(500).json({
+        if (error.code === "ER_DUP_ENTRY") {
+            return res.status(409).json({
+                message: "Email already registered"
+            });
+        }
+
+        return res.status(500).json({
             message: "Failed to register user",
             error: error.message
         });
     }
 });
 
-
-// ===============================
 // LOGIN
-// ===============================
 router.post("/login", async (req, res) => {
     try {
-        console.log("Login body:", req.body);
-
-        if (!req.body) {
-            return res.status(400).json({
-                message: "Request body is missing"
-            });
-        }
-
-        const {
-            email,
-            password
-        } = req.body;
+        const { email, password } = req.body || {};
 
         if (!email || !password) {
             return res.status(400).json({
@@ -131,6 +93,10 @@ router.post("/login", async (req, res) => {
             });
         }
 
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET is not configured");
+        }
+
         const token = jwt.sign(
             {
                 id: user.id,
@@ -138,12 +104,10 @@ router.post("/login", async (req, res) => {
                 role: user.role
             },
             process.env.JWT_SECRET,
-            {
-                expiresIn: "1d"
-            }
+            { expiresIn: "1d" }
         );
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Login successful",
             token,
             user: {
@@ -155,12 +119,9 @@ router.post("/login", async (req, res) => {
         });
 
     } catch (error) {
-        console.error(
-            "Login error:",
-            error
-        );
+        console.error("Login error:", error);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: "Login failed",
             error: error.message
         });
